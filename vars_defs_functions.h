@@ -13,7 +13,7 @@
 
 #define ROWS 20
 #define COLS 20
-#define TOTAL_DAYS 2
+#define TOTAL_DAYS 5
 #define THREAD_COUNT 5
 #define WORLD_OUTPUT_INTERVAL 1
 
@@ -44,6 +44,9 @@ extern long globalnumZ;
 extern long globalnumD;
 extern long globalnumR;
 extern long globalnumI;
+
+extern pthread_mutex_t lock;
+extern pthread_cond_t cond;
 
 extern int day;
 

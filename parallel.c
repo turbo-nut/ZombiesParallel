@@ -13,9 +13,14 @@ long globalnumR = 0;
 long globalnumD = 0;
 long globalnumI = 0;
 
+
+  pthread_cond_t cond;
+  pthread_mutex_t lock;
 // redefine cells
 CELL **current, **future;
 int main() {
+
+
 
   long thread;
 
@@ -65,6 +70,9 @@ int main() {
   printf("World Initialised.\n\n\n");
 #endif
 
+  pthread_mutex_init(&lock, NULL);
+
+
   outputDaySZRD(fp_daySZRD, day, globalnumS, globalnumZ, globalnumR, globalnumD,
                 globalnumI);
   outputWorld(day, current);
@@ -73,20 +81,15 @@ int main() {
   for (thread = 0; thread < THREAD_COUNT; thread++) {
     pthread_create(&thread_handles[thread], NULL, threadDayLoop,
                    (void *)thread);
-    outputDaySZRD(fp_daySZRD, day, globalnumS, globalnumZ, globalnumR,
-                  globalnumD, globalnumI);
     printf("Thread %ld: created. Running...\n", thread);
   }
 
   // join the threads
   for (thread = 0; thread < THREAD_COUNT; thread++) {
-    printf("Thread %ld: joining.\n\n", thread);
+    printf("Thread %ld: joining.\n", thread);
     pthread_join(thread_handles[thread], NULL);
   }
 
-  outputDaySZRD(fp_daySZRD, day, globalnumS, globalnumZ, globalnumR, globalnumD,
-                globalnumI);
-  outputWorld(TOTAL_DAYS, current);
   // we're freeing the memory to prevent memory leaks
   // freeing cells, then the file, then threads
   free(current);

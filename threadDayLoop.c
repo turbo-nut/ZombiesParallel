@@ -2,28 +2,17 @@
 #include <pthread.h>
 #include <unistd.h>
 #include "vars_defs_functions.h"
-//extern ints for threads
 
-
-//using a mutex lock and conditional variable
-pthread_mutex_t lock;
-pthread_cond_t cond;
-int finished;
-int finishedThreads;
 void* threadDayLoop(void* rank){
 
   long intRank = (long) rank;
-
-  finishedThreads = 0;
-
-  pthread_mutex_init(&lock, NULL);
-
+  int finishedThreads;
 
 
   long long startRow = intRank * (ROWS/THREAD_COUNT);
   long long endRow = ((intRank+1) * (ROWS/THREAD_COUNT)) - 1;
 
-  int day = 1;
+  int day;
   int i,j, row, col, numZN, numSN;
   
 
@@ -65,10 +54,24 @@ void* threadDayLoop(void* rank){
       }
     }
     // once the threads are finished with each loop, we store it into the global variables
-      
     pthread_mutex_lock(&lock);
     finishedThreads++;
+    #if DEBUG_LEVEL > 1
+    printf("Mutex lock.\n Day: %d.\n Thread Finished.\n", day);
+    #endif
+    globalnumS += localnumS;
+    globalnumZ += localnumZ;
+    globalnumD += localnumD;
+    globalnumR += localnumR;
+    globalnumI += localnumI;
+    #if DEBUG_LEVEL > 1
+    printf("Global var update.\n");
+    #endif
+    #if DEBUG_LEVEL > 1
+    printf("Finished Threads: %d\n", finishedThreads);
+    #endif
     if (finishedThreads == THREAD_COUNT) {
+      day++;
       #if DEBUG_LEVEL > 1
       printf("Threads finished... compiling stats..\n\n");
       printf("Day %d of %d done.\n\n", day, TOTAL_DAYS);
@@ -80,39 +83,22 @@ void* threadDayLoop(void* rank){
           } 
         }
       }
-      finishedThreads = 0;
       pthread_cond_broadcast(&cond);
       #if DEBUG_LEVEL > 1
       printf("Broadcast to threads\n\n");
       #endif
+      finishedThreads = 0;
     }
     else{
       while(pthread_cond_wait(&cond,&lock) != 0);
     }
+
     pthread_mutex_unlock(&lock);
-    globalnumS += localnumS;
-    globalnumZ += localnumZ;
-    globalnumD += localnumD;
-    globalnumR += localnumR;
-    globalnumI += localnumI;
-
-    #if DEBUG_LEVEL > 1
-    printf("End of day loop.\n");
-    #endif
-
-    #if DEBUG_LEVEL > 1
-    printf("Checking for hang\n");
-    #endif
     localnumS = 0, localnumZ = 0, localnumR = 0, localnumD = 0, localnumI = 0;
-    #if DEBUG_LEVEL > 1
-    printf("Checking for hang again\n");
-    #endif
 
     
 
   }
-  pthread_cond_destroy(&cond);
-  return 0;
 }
 
 
