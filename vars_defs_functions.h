@@ -49,6 +49,7 @@ extern pthread_mutex_t lock;
 extern pthread_cond_t cond;
 
 extern int day;
+extern int finishedThreads;
 
 extern CELL **current, **future;
 

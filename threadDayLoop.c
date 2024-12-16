@@ -5,23 +5,26 @@
 
 void* threadDayLoop(void* rank){
 
-  long intRank = (long) rank;
-  int finishedThreads;
+  long numRank = (long) rank;
 
 
-  long long startRow = intRank * (ROWS/THREAD_COUNT);
-  long long endRow = ((intRank+1) * (ROWS/THREAD_COUNT)) - 1;
+  long long startRow = numRank * (ROWS/THREAD_COUNT);
+  long long endRow = ((numRank+1) * (ROWS/THREAD_COUNT));
 
-  int day;
   int i,j, row, col, numZN, numSN;
   
 
-  long localnumS = 0, localnumZ = 0, localnumR = 0, localnumD = 0, localnumI = 0;
+  long localnumS, localnumZ, localnumR, localnumD, localnumI;
 
 
 ///////////////////////////////////// DAY LOOP /////////////////////////////
 
   while (day < TOTAL_DAYS) {
+    localnumS = 0;
+    localnumZ = 0;
+    localnumR = 0;
+    localnumD = 0;
+    localnumI = 0;
     for (row=startRow;row<endRow;row++) {
       for (col=0;col<COLS;col++) {
         switch (current[row][col].state) {
@@ -54,26 +57,24 @@ void* threadDayLoop(void* rank){
       }
     }
     // once the threads are finished with each loop, we store it into the global variables
+    // we then set the lock so that only 1 can actually update at a time
+    //
+    //once the thread is finished with their loop they check if they're able to access the barrier
+    //if not they wait until the last thread is finished
+    //
+    //the last thread will then make changes to each of the cells, and then output the world
+    //i'm using pthreads_cond_t from Pacheco's book, ch 4.8.
     pthread_mutex_lock(&lock);
     finishedThreads++;
-    #if DEBUG_LEVEL > 1
-    printf("Mutex lock.\n Day: %d.\n Thread Finished.\n", day);
-    #endif
     globalnumS += localnumS;
     globalnumZ += localnumZ;
     globalnumD += localnumD;
     globalnumR += localnumR;
     globalnumI += localnumI;
-    #if DEBUG_LEVEL > 1
-    printf("Global var update.\n");
-    #endif
-    #if DEBUG_LEVEL > 1
-    printf("Finished Threads: %d\n", finishedThreads);
-    #endif
     if (finishedThreads == THREAD_COUNT) {
       day++;
       #if DEBUG_LEVEL > 1
-      printf("Threads finished... compiling stats..\n\n");
+      printf("Thread %ld finished... compiling stats..\n\n", numRank);
       printf("Day %d of %d done.\n\n", day, TOTAL_DAYS);
       #endif
       for (i=0;i<ROWS;i++) {
@@ -82,6 +83,10 @@ void* threadDayLoop(void* rank){
           current[i][j] = future[i][j];
           } 
         }
+      }
+      outputDaySZRD(fp_daySZRD, day, globalnumS, globalnumZ, globalnumR, globalnumD, globalnumI);
+      if (day%WORLD_OUTPUT_INTERVAL == 0) {
+      outputWorld(day,current);
       }
       pthread_cond_broadcast(&cond);
       #if DEBUG_LEVEL > 1
@@ -99,6 +104,7 @@ void* threadDayLoop(void* rank){
     
 
   }
+  return 0;
 }
 
 

@@ -12,7 +12,8 @@ long globalnumZ = 0;
 long globalnumR = 0;
 long globalnumD = 0;
 long globalnumI = 0;
-
+int day;
+int finishedThreads;
 
   pthread_cond_t cond;
   pthread_mutex_t lock;
@@ -20,6 +21,9 @@ long globalnumI = 0;
 CELL **current, **future;
 int main() {
 
+
+  day = 1;
+  finishedThreads = 0;
 
 
   long thread;

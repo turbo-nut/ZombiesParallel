@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "vars_defs_functions.h"
 
 void decide_S_to_D(int row,
@@ -8,7 +9,18 @@ void decide_S_to_D(int row,
 		   long *ptr_to_numD,
 		   CELL **current,
 		   CELL **future){
-  printf("");
+	float deathChance = (rand() % (100 + 1 - 1) + 1) * 0.01;
+    if (deathChance > 0.95) {
+      future[row][col].state = 'D';
+      (*ptr_to_numD)++;
+      (*ptr_to_numS)--;
+      current[row][col].stateChange = 'Y';
+#if DEBUG_LEVEL > 1
+      printf("Cell [%d],[%d]: DEATH TO NATURAL CAUSES \n", row, col);
+#endif
+    } else {
+      future[row][col].state = 'S';
+      current[row][col].stateChange = 'N';
+    }
+
 }
-
-
