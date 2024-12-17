@@ -99,7 +99,6 @@ void* threadDayLoop(void* rank){
     }
 
     pthread_mutex_unlock(&lock);
-    localnumS = 0, localnumZ = 0, localnumR = 0, localnumD = 0, localnumI = 0;
 
     
 

@@ -9,8 +9,8 @@ void decide_S_to_D(int row,
 		   long *ptr_to_numD,
 		   CELL **current,
 		   CELL **future){
-	float deathChance = (rand() % (100 + 1 - 1) + 1) * 0.01;
-    if (deathChance > 0.95) {
+	float deathChance = (float)rand() / (double)RAND_MAX;
+    if (deathChance > 0.99) {
       future[row][col].state = 'D';
       (*ptr_to_numD)++;
       (*ptr_to_numS)--;

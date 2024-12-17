@@ -11,9 +11,9 @@
 #include <stdio.h>
 #define DEBUG_LEVEL 2
 
-#define ROWS 50
-#define COLS 50
-#define TOTAL_DAYS 20
+#define ROWS 100
+#define COLS 100
+#define TOTAL_DAYS 1000
 #define THREAD_COUNT 5
 #define WORLD_OUTPUT_INTERVAL 1
 
